@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Face Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            width: 100%;
+            max-width: 500px;
+        }
+        
+        .login-header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .login-header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        
+        .login-content {
+            padding: 40px;
+        }
+        
+        .video-container {
+            width: 100%;
+            height: 300px;
+            background: #1e293b;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        #videoFeed {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .capture-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            display: none;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(79, 70, 229, 0.4);
+        }
+        
+        .btn-success {
+            background: #10b981;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+        }
+        
+        .btn-secondary {
+            background: #64748b;
+        }
+        
+        .status-message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+        
+        .status-success {
+            background: #dcfce7;
+            color: #166534;
+            display: block;
+        }
+        
+        .status-error {
+            background: #fee2e2;
+            color: #991b1b;
+            display: block;
+        }
+        
+        .device-buttons {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .device-btn {
+            background: #f1f5f9;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .device-btn:hover {
+            background: #4f46e5;
+            color: white;
+            border-color: #4f46e5;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            color: #64748b;
+            text-decoration: none;
+        }
+        
+        .back-btn:hover {
+            color: #4f46e5;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <h1>🔐 Face Authentication</h1>
+            <p>Look at the camera to login</p>
+        </div>
+        
+        <div class="login-content">
+            <div class="video-container">
+                <img id="videoFeed" src="/api/video_feed" alt="Camera Feed">
+                <div class="capture-overlay" id="captureOverlay">
+                    <div style="font-size: 3rem; margin-bottom: 20px;">📸</div>
+                    <h2>Processing Face...</h2>
+                    <p>Please look directly at the camera</p>
+                </div>
+            </div>
+            
+            <div style="text-align: center;">
+                <button onclick="captureAndRecognize()" class="btn" id="loginBtn">
+                    👤 Login with Face
+                </button>
+                
+                <div class="status-message" id="statusMessage"></div>
+                
+                <div id="unlockSection" style="display: none;">
+                    <h3 style="margin: 20px 0 10px 0;">Unlock Device:</h3>
+                    <div class="device-buttons">
+                        <div class="device-btn" onclick="unlockDevice('phone')">
+                            📱 Phone
+                        </div>
+                        <div class="device-btn" onclick="unlockDevice('laptop')">
+                            💻 Laptop
+                        </div>
+                        <div class="device-btn" onclick="unlockDevice('website')">
+                            🌐 Website
+                        </div>
+                        <div class="device-btn" onclick="unlockDevice('door')">
+                            🚪 Smart Door
+                        </div>
+                    </div>
+                </div>
+                
+                <a href="/" class="back-btn">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = null;
+        
+        async function captureAndRecognize() {
+            const loginBtn = document.getElementById('loginBtn');
+            const overlay = document.getElementById('captureOverlay');
+            const statusMsg = document.getElementById('statusMessage');
+            
+            // Show overlay
+            overlay.style.display = 'flex';
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '🔍 Processing...';
+            
+            try {
+                // Capture current frame from video
+                const video = document.getElementById('videoFeed');
+                const canvas = document.createElement('canvas');
+                canvas.width = video.videoWidth || 640;
+                canvas.height = video.videoHeight || 480;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(video, 0, 0);
+                
+                // Convert to base64
+                const imageData = canvas.toDataURL('image/jpeg');
+                
+                // Send to server for recognition
+                const response = await fetch('/api/recognize_face', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ image: imageData })
+                });
+                
+                const data = await response.json();
+                
+                // Hide overlay
+                overlay.style.display = 'none';
+                
+                if (data.success) {
+                    currentUser = data.user;
+                    
+                    statusMsg.className = 'status-message status-success';
+                    statusMsg.innerHTML = `
+                        <h3>✓ Login Successful!</h3>
+                        <p>Welcome ${data.user} (${data.confidence.toFixed(1)}% match)</p>
+                    `;
+                    statusMsg.style.display = 'block';
+                    
+                    // Show unlock options
+                    document.getElementById('unlockSection').style.display = 'block';
+                    
+                    loginBtn.innerHTML = '✅ Login Successful';
+                    loginBtn.style.background = '#10b981';
+                    
+                } else {
+                    statusMsg.className = 'status-message status-error';
+                    statusMsg.innerHTML = `
+                        <h3>✗ Login Failed</h3>
+                        <p>${data.message}</p>
+                        <p>Attempts: ${data.attempts}/3</p>
+                    `;
+                    statusMsg.style.display = 'block';
+                    
+                    loginBtn.innerHTML = '👤 Try Again';
+                    loginBtn.disabled = false;
+                    
+                    if (data.attempts >= 3) {
+                        alert('⚠️ Too many failed attempts! Security alert sent.');
+                    }
+                }
+                
+            } catch (error) {
+                overlay.style.display = 'none';
+                statusMsg.className = 'status-message status-error';
+                statusMsg.innerHTML = '<p>Error: ' + error.message + '</p>';
+                statusMsg.style.display = 'block';
+                loginBtn.innerHTML = '👤 Try Again';
+                loginBtn.disabled = false;
+            }
+        }
+        
+        async function unlockDevice(deviceType) {
+            if (!currentUser) {
+                alert('Please login first');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/unlock_device', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        device: deviceType,
+                        user: currentUser
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ ${data.message}`);
+                }
+            } catch (error) {
+                alert('Error unlocking device');
+            }
+        }
+        
+        // Auto-refresh video feed if it stalls
+        setInterval(() => {
+            const video = document.getElementById('videoFeed');
+            video.src = video.src; // Refresh
+        }, 30000);
+    </script>
+</body>
+</html>
+''')
+
+# Create admin.html
+with open('templates/admin.html', 'w') as f:
+    f.write('''
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .admin-header {
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .admin-header h1 {
+            color: #1e293b;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .admin-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .admin-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(79, 70, 229, 0.4);
+        }
+        
+        .btn-success {
+            background: #10b981;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+        
+        .users-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+        
+        .users-list li {
+            background: #f8fafc;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .capture-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .capture-box {
+            background: #f1f5f9;
+            border-radius: 10px;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .capture-box:hover {
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .capture-box

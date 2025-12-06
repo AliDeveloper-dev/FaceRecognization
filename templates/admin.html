@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .admin-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .admin-header {
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        
+        .admin-header h1 {
+            color: #1e293b;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .admin-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        @media (max-width: 900px) {
+            .admin-content {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .card h2 {
+            color: #1e293b;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 5px;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(79, 70, 229, 0.4);
+        }
+        
+        .btn-success {
+            background: #10b981;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+        }
+        
+        input, select {
+            width: 100%;
+            padding: 12px 15px;
+            margin: 10px 0;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        
+        input:focus, select:focus {
+            outline: none;
+            border-color: #4f46e5;
+        }
+        
+        .users-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+        
+        .users-list li {
+            background: #f8fafc;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .capture-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .capture-box {
+            background: #f1f5f9;
+            border-radius: 10px;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .capture-box:hover {
+            background: #4f46e5;
+            color: white;
+        }
+        
+        .capture-box.captured {
+            background: #dcfce7;
+            border: 2px solid #10b981;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            margin-top: 20px;
+            color: #64748b;
+            text-decoration: none;
+        }
+        
+        .back-btn:hover {
+            color: #4f46e5;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <div class="admin-header">
+            <h1>👑 Admin Panel</h1>
+            <p>Manage users and system settings</p>
+        </div>
+        
+        <div class="admin-content">
+            <div class="card">
+                <h2>📸 Add New User</h2>
+                
+                <input type="text" id="userName" placeholder="Enter user's name" required>
+                
+                <h3 style="margin-top: 20px;">Capture Face Images:</h3>
+                <div class="capture-container" id="captureContainer">
+                    <div class="capture-box" onclick="captureImage(0)">1</div>
+                    <div class="capture-box" onclick="captureImage(1)">2</div>
+                    <div class="capture-box" onclick="captureImage(2)">3</div>
+                    <div class="capture-box" onclick="captureImage(3)">4</div>
+                    <div class="capture-box" onclick="captureImage(4)">5</div>
+                    <div class="capture-box" onclick="captureImage(5)">6</div>
+                </div>
+                
+                <div id="capturedImages" style="display: none;"></div>
+                
+                <button onclick="addUser()" class="btn btn-success" id="addUserBtn">
+                    Add User
+                </button>
+                
+                <button onclick="autoCapture()" class="btn">
+                    Auto Capture (6 Images)
+                </button>
+            </div>
+            
+            <div class="card">
+                <h2>👥 Registered Users</h2>
+                <p id="usersCount">Loading users...</p>
+                
+                <ul class="users-list" id="usersList">
+                    <!-- Users will be loaded here -->
+                </ul>
+                
+                <div style="margin-top: 30px;">
+                    <button onclick="loadUsers()" class="btn">
+                        Refresh Users
+                    </button>
+                    
+                    <button onclick="trainModel()" class="btn btn-success">
+                        Train Model
+                    </button>
+                </div>
+                
+                <a href="/" class="back-btn">← Back to Home</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let capturedImages = [];
+        
+        async function autoCapture() {
+            const name = document.getElementById('userName').value;
+            if (!name) {
+                alert('Please enter a name first');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/capture_images', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        count: 6
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    capturedImages = data.images;
+                    
+                    // Update UI
+                    const boxes = document.querySelectorAll('.capture-box');
+                    data.images.forEach((img, index) => {
+                        if (index < boxes.length) {
+                            boxes[index].classList.add('captured');
+                            boxes[index].innerHTML = '✅';
+                        }
+                    });
+                    
+                    alert(`Captured ${data.count} images successfully!`);
+                }
+            } catch (error) {
+                alert('Error capturing images');
+            }
+        }
+        
+        function captureImage(index) {
+            // For demo - in real app, capture from camera
+            const boxes = document.querySelectorAll('.capture-box');
+            boxes[index].classList.add('captured');
+            boxes[index].innerHTML = '✅';
+            
+            // Store placeholder image
+            capturedImages[index] = `data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCI+CiAgPHJlY3Qgd2lkdGg9IjEwMCIgaGVpZ2h0PSIxMDAiIGZpbGw9IiNlMmU4ZjAiLz4KICA8dGV4dCB4PSI1MCIgeT0iNTUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIyNCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0iIzY0NzQ4YiI+SW1hZ2UgJHtpbmRleCsxfTwvdGV4dD4KPC9zdmc+`;
+        }
+        
+        async function addUser() {
+            const name = document.getElementById('userName').value;
+            
+            if (!name) {
+                alert('Please enter a name');
+                return;
+            }
+            
+            if (capturedImages.length === 0) {
+                alert('Please capture at least one image');
+                return;
+            }
+            
+            const btn = document.getElementById('addUserBtn');
+            btn.disabled = true;
+            btn.innerHTML = 'Adding...';
+            
+            try {
+                // Create form data
+                const formData = new FormData();
+                formData.append('name', name);
+                
+                capturedImages.forEach((img, index) => {
+                    formData.append('images[]', img);
+                });
+                
+                const response = await fetch('/api/add_user', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert(`✅ ${data.message}`);
+                    // Reset form
+                    document.getElementById('userName').value = '';
+                    capturedImages = [];
+                    const boxes = document.querySelectorAll('.capture-box');
+                    boxes.forEach(box => {
+                        box.classList.remove('captured');
+                        box.innerHTML = box.getAttribute('data-original') || '📸';
+                    });
+                    
+                    // Reload users
+                    loadUsers();
+                } else {
+                    alert(`Error: ${data.error}`);
+                }
+                
+            } catch (error) {
+                alert('Error adding user: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Add User';
+            }
+        }
+        
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/get_users');
+                const data = await response.json();
+                
+                if (data.success) {
+                    document.getElementById('usersCount').textContent = 
+                        `${data.count} Users Registered`;
+                    
+                    const usersList = document.getElementById('usersList');
+                    usersList.innerHTML = '';
+                    
+                    data.users.forEach(user => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <span>${user}</span>
+                            <button onclick="deleteUser('${user}')" class="btn btn-danger" style="padding: 5px 15px; font-size: 0.9rem;">
+                                Delete
+                            </button>
+                        `;
+                        usersList.appendChild(li);
+                    });
+                }
+            } catch (error) {
+                document.getElementById('usersCount').textContent = 'Error loading users';
+            }
+        }
+        
+        async function trainModel() {
+            try {
+                const response = await fetch('/api/train_model', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                alert(data.message || 'Model trained successfully!');
+                loadUsers();
+            } catch (error) {
+                alert('Error training model');
+            }
+        }
+        
+        function deleteUser(userName) {
+            if (confirm(`Are you sure you want to delete ${userName}?`)) {
+                alert(`Note: User deletion not implemented in this demo.`);
+                // In real app, call API to delete user
+            }
+        }
+        
+        // Load users on page load
+        loadUsers();
+    </script>
+</body>
+</html>

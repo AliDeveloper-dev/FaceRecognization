@@ -1,0 +1,302 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Face Security System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+            width: 100%;
+            max-width: 1200px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 40px;
+        }
+        
+        .card {
+            background: #f8fafc;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid #e2e8f0;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 20px;
+        }
+        
+        .card h2 {
+            color: #1e293b;
+            margin-bottom: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .card p {
+            color: #64748b;
+            margin-bottom: 25px;
+            line-height: 1.6;
+        }
+        
+        .btn {
+            display: inline-block;
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            color: white;
+            padding: 12px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        
+        .btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(79, 70, 229, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #64748b;
+        }
+        
+        .btn-secondary:hover {
+            background: #475569;
+            box-shadow: 0 5px 20px rgba(100, 116, 139, 0.4);
+        }
+        
+        .btn-success {
+            background: #10b981;
+        }
+        
+        .btn-success:hover {
+            background: #059669;
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+            box-shadow: 0 5px 20px rgba(239, 68, 68, 0.4);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 10px;
+        }
+        
+        .status-online {
+            background: #dcfce7;
+            color: #166534;
+        }
+        
+        .users-list {
+            list-style: none;
+            margin-top: 20px;
+        }
+        
+        .users-list li {
+            background: white;
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+                padding: 20px;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔐 Face Recognition Security System</h1>
+            <p>Advanced security with facial authentication and real-time monitoring</p>
+        </div>
+        
+        <div class="content">
+            <div class="card">
+                <div class="card-icon">👤</div>
+                <h2>Face Login</h2>
+                <p>Authenticate using facial recognition for secure access to your devices and accounts.</p>
+                <a href="/login" class="btn">Login with Face</a>
+                <div class="status-badge status-online">System Active</div>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">➕</div>
+                <h2>Add New User</h2>
+                <p>Register new users by capturing their facial data for future authentication.</p>
+                <a href="/admin" class="btn btn-success">Manage Users</a>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">📊</div>
+                <h2>System Status</h2>
+                <p id="statusText">Checking system status...</p>
+                <div id="statusBadge" class="status-badge">Loading...</div>
+                <button onclick="checkStatus()" class="btn btn-secondary" style="margin-top: 15px;">
+                    Refresh Status
+                </button>
+            </div>
+            
+            <div class="card">
+                <div class="card-icon">🔧</div>
+                <h2>Quick Actions</h2>
+                <p>Perform system operations and manage security settings.</p>
+                <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 20px;">
+                    <button onclick="trainModel()" class="btn">Train Model</button>
+                    <button onclick="getUsers()" class="btn btn-secondary">View Users</button>
+                    <button onclick="testUnlock()" class="btn btn-success">Test Unlock</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function checkStatus() {
+            try {
+                const response = await fetch('/api/check_status');
+                const data = await response.json();
+                
+                document.getElementById('statusText').textContent = 
+                    `System Online • ${data.users_count} Users Registered`;
+                document.getElementById('statusBadge').textContent = 'ACTIVE';
+                document.getElementById('statusBadge').className = 'status-badge status-online';
+                
+            } catch (error) {
+                document.getElementById('statusText').textContent = 'System Offline';
+                document.getElementById('statusBadge').textContent = 'OFFLINE';
+                document.getElementById('statusBadge').className = 'status-badge status-offline';
+            }
+        }
+        
+        async function trainModel() {
+            try {
+                const response = await fetch('/api/train_model', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                alert(data.message || 'Model trained successfully!');
+                checkStatus();
+            } catch (error) {
+                alert('Error training model');
+            }
+        }
+        
+        async function getUsers() {
+            try {
+                const response = await fetch('/api/get_users');
+                const data = await response.json();
+                
+                if (data.success) {
+                    let usersHTML = '<h3>Registered Users:</h3><ul class="users-list">';
+                    data.users.forEach(user => {
+                        usersHTML += `<li>${user}</li>`;
+                    });
+                    usersHTML += '</ul>';
+                    
+                    document.getElementById('statusText').innerHTML = usersHTML;
+                }
+            } catch (error) {
+                alert('Error fetching users');
+            }
+        }
+        
+        async function testUnlock() {
+            try {
+                const response = await fetch('/api/unlock_device', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        device: 'phone',
+                        user: 'Test User'
+                    })
+                });
+                const data = await response.json();
+                alert(data.message);
+            } catch (error) {
+                alert('Error testing unlock');
+            }
+        }
+        
+        // Check status on page load
+        checkStatus();
+        
+        // Auto-refresh status every 30 seconds
+        setInterval(checkStatus, 30000);
+    </script>
+</body>
+</html>
